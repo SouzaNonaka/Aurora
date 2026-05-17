@@ -58,12 +58,31 @@ Aurora is an open-source community project, any help with the source code is gre
 4. Run `pip install -r dev/requirements.txt`
 5. Run `python build.py` or `py build.py`
 ### ᅠ
+## Mod Implementation to Aurora
+> [!NOTE]
+> Aurora is not a tool used to create mods, it is a tool to use mods. We are not experienced with modding, please ask experts in modding and not us if you are stuck.
+Aurora's Mod Manager supports a `mod.json` file inside your mod folder to display custom assets in the mod manager. If you are a modder and would like to include it on your project, here is how to do it.
+1. Create a new file named `mod.json`, in the same location as your `.pak`, `.utoc` and `.ucas` files.
+2. Replace the contents with:
+```json
+{
+    "Name": "Example Mod Name",
+    "Version": "1.0.0",
+    "Author": "Example Author Name",
+    "Optionals": {
+        "Support Link": "https://patreon.com/example"
+    }
+}
+```
+3. Edit the contents with whatever you want, Aurora handles the rest.
+- You can replace your support link with whatever link you want, it doesn't have to be patreon.
+### ᅠ
 ## Translation Status
 | Language | Status | File | Status |
 | :--- | :--- | :---: | :---: |
 | <img src="https://flagcdn.com/w20/gb.png" width="20"> English | ![100%](https://geps.dev/progress/100?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `en.json` |
 | <img src="https://flagcdn.com/w20/ru.png" width="20"> Russian | ![0%](https://geps.dev/progress/0?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `ru.json` | No Translation |
-| <img src="https://flagcdn.com/w20/es.png" width="20"> Spanish | ![0%](https://geps.dev/progress/0?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `es.json` | No Translation |
+| <img src="https://flagcdn.com/w20/es.png" width="20"> Spanish | ![100%](https://geps.dev/progress/100?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `es.json` |
 | <img src="https://flagcdn.com/w20/fr.png" width="20"> French | ![0%](https://geps.dev/progress/0?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `fr.json` | No Translation |
 | <img src="https://flagcdn.com/w20/de.png" width="20"> German | ![0%](https://geps.dev/progress/0?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `de.json` | No Translation |
 | <img src="https://flagcdn.com/w20/tr.png" width="20"> Turkish | ![100%](https://geps.dev/progress/100?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `tr.json` |
