@@ -3,15 +3,14 @@ import json
 from pathlib import Path
 from dataclasses import dataclass
 from src.logger import logger
+from src.translator import Translator, t
 
 @dataclass
 class ModEntry:
     folder_name: str      # Actual name on disk ("disabled_MintMod")
     display_name: str     # Name shown in UI ("MintMod")
-    version: str = "Unknown"
-    author: str = "Unknown"
-    mod_type: str = "Unknown"
-    target: str = "Unknown"
+    version: str = t("mod_manager_unknown")
+    author: str = t("mod_manager_unknown")
     support_link: str = ""
     is_enabled: bool = True
     has_json: bool = False
@@ -32,20 +31,24 @@ class ModManager:
             if not folder.is_dir():
                 continue
             
-            # Mod Folder Check: Must have at least one .pak file in the folder for the mod to count.
+            # Mod Folder Check: Must have at least one .pak file
             has_pak = any(f.suffix.lower() == ".pak" for f in folder.iterdir())
             if not has_pak:
                 continue
 
             raw_name = folder.name
             is_enabled = not raw_name.startswith("disabled_")
-            # Clean name for display if no mod.json is found
             clean_name = raw_name.replace("disabled_", "").replace("_P", "")
 
+            # Baseline dictionary with explicitly evaluated fallbacks
             mod_data = {
                 "folder_name": raw_name,
                 "display_name": clean_name,
-                "is_enabled": is_enabled
+                "is_enabled": is_enabled,
+                "version": t("mod_manager_unknown"),
+                "author": t("mod_manager_unknown"),
+                "support_link": "",
+                "has_json": False
             }
 
             # Attempt to parse Aurora-native metadata if the mod contains it
@@ -57,9 +60,7 @@ class ModManager:
                         mod_data.update({
                             "display_name": data.get("Name", mod_data["display_name"]),
                             "version": data.get("Version", "1.0.0"),
-                            "author": data.get("Author", "Unknown"),
-                            "mod_type": data.get("Type", "Unknown"),
-                            "target": data.get("Target", "Unknown"),
+                            "author": data.get("Author", t("mod_manager_unknown")),
                             "support_link": data.get("Optionals", {}).get("Support Link", ""),
                             "has_json": True
                         })
