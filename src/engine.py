@@ -6,6 +6,7 @@ import time
 import psutil
 from pathlib import Path
 from src.logger import logger
+from src.discord_rpc import DiscordRPC
 
 def get_app_dir():
     """Returns the directory of the EXE (frozen) or the project root (dev)."""
@@ -32,7 +33,6 @@ class AuroraEngine:
             "global_dll":  self.game_path / "NTEGlobal" / "version.dll",
             "bin_dll":     self._win64 / "version.dll",
             "asi_plugin":  self._win64 / "signmain.asi",
-            "pak_junction": self._pak_base,
         }
 
         # Censorship-removal targets, only deployed / cleaned when the feature is enabled.
@@ -45,9 +45,9 @@ class AuroraEngine:
         # Source lives in Bin/Builtins/ so it is always shipped with Aurora on NTE launch.
         self._ndl_source = self.bin_path / "Builtins"
         self.ndl_targets = {
-            "auddl_pak":  self._pak_base / "auddl_P.pak",
-            "auddl_utoc": self._pak_base / "auddl_P.utoc",
-            "auddl_ucas": self._pak_base / "auddl_P.ucas",
+            "auddl_pak":  self._pak_base.parent / "auddl_P.pak",
+            "auddl_utoc": self._pak_base.parent / "auddl_P.utoc",
+            "auddl_ucas": self._pak_base.parent / "auddl_P.ucas",
         }
 
     def _remove_junction(self, path):
@@ -120,7 +120,7 @@ class AuroraEngine:
                 continue
             try:
                 if path.is_file():
-                    os.chmod(path, 0o777)  # Attempt to clear read-only flag if set.
+                    os.chmod(path, 0o777)
                     path.unlink()
                     logger.info(f"Removed file: {key} ({path})")
                 elif path.is_dir() or os.path.islink(path):
@@ -136,6 +136,16 @@ class AuroraEngine:
                     logger.info(f"Shell-removed: {key}")
                 except Exception as fallback_err:
                     logger.error(f"Could not remove {key}: {fallback_err}")
+
+        # Clean up zz_ mod junctions from Paks
+        pak_dir = self.game_path / "Client/WindowsNoEditor/HT/Content/Paks"
+        if pak_dir.exists():
+            for item in pak_dir.iterdir():
+                if item.name.startswith("zz_") and (item.is_dir() or os.path.islink(item)):
+                    if self._remove_junction(item):
+                        logger.info(f"Removed mod junction: {item.name}")
+                    else:
+                        logger.warning(f"Failed to remove mod junction: {item.name}")
 
     def inject(self):
         """Applies DLLs and creates the Mod Junction with existence checks."""
@@ -207,30 +217,28 @@ class AuroraEngine:
                         return "access_denied"
                     raise
 
-            target_base = self.targets["pak_junction"]
-            os.makedirs(target_base, exist_ok=True)
-
             logger.info("Deploying enabled mods via individual junctions...")
-            
+
+            pak_dir = self.game_path / "Client/WindowsNoEditor/HT/Content/Paks"
             deployed_count = 0
+
             for folder in self.mods_source.iterdir():
                 if not folder.is_dir():
                     continue
-
                 if folder.name.startswith("disabled_"):
                     continue
 
-                mod_target_path = target_base / folder.name
+                mod_target_path = pak_dir / f"zz_{folder.name}"
 
                 if os.path.lexists(mod_target_path):
                     self._remove_junction(mod_target_path)
 
-                # Creates the link for this specific mod selected
                 cmd = f'mklink /J "{mod_target_path}" "{folder.resolve()}"'
                 result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
 
                 if result.returncode == 0:
                     deployed_count += 1
+                    logger.info(f"Junctioned mod: zz_{folder.name}")
                 else:
                     logger.error(f"Failed to junction mod {folder.name}: {result.stderr.strip()}")
 
@@ -238,7 +246,7 @@ class AuroraEngine:
 
             # Copy no-drive-line pak files directly into ~Aurora if the feature is enabled.
             if self.no_drive_line:
-                logger.info("No Drive Line is enabled — copying built-in pak files into ~Aurora...")
+                logger.info("No Drive Line is enabled, copying built-in pak files")
                 ndl_files = ["auddl_P.pak", "auddl_P.utoc", "auddl_P.ucas"]
                 missing = [f for f in ndl_files if not (self._ndl_source / f).exists()]
                 if missing:
@@ -246,7 +254,7 @@ class AuroraEngine:
                 else:
                     try:
                         for fname in ndl_files:
-                            shutil.copy(self._ndl_source / fname, self._pak_base / fname)
+                            shutil.copy(self._ndl_source / fname, self._pak_base.parent / fname)
                         logger.info("Copied No Drive Line pak files.")
                     except (PermissionError, OSError) as e:
                         if getattr(e, 'winerror', None) in (5, 32):
