@@ -8,6 +8,7 @@ from src.engine import AuroraEngine
 from src.utils import resource_path
 from src.path_finder import get_game_directory
 from src import config_manager as cfg
+from src.discord_rpc import DiscordRPC
 
 def handle_exception(exc_type, exc_value, exc_tb):
     error = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
@@ -50,6 +51,11 @@ def main():
         no_drive_line=cfg.get_no_drive_line(),
     ) if initial_path else None
     window = AuroraUI(engine, initial_path)
+
+    if cfg.get_discord_rpc():
+        window.rpc = DiscordRPC()
+        window.rpc.set_idle()
+        window.rpc.start()
 
     window.show()
     sys.exit(app.exec())
