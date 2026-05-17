@@ -157,55 +157,193 @@ POPUP_STYLE = """
 """
 
 MOD_MANAGER_STYLE = """
+/* ── Outer container — mirrors SettingsContainer ── */
 #ModManagerOverlay {
-    background-color: rgba(20, 20, 20, 245);
-    border-left: 1px solid rgba(255, 255, 255, 10);
+    background-color: #101010;
+    border: 1px solid #333333;
+    border-radius: 20px;
 }
 
-#ModCard {
-    background-color: rgba(40, 40, 40, 180);
-    border: 1px solid rgba(255, 255, 255, 15);
+/* ── Header bar ── */
+#ModManagerHeader {
+    background-color: rgba(255, 255, 255, 3);
+    border-bottom: 1px solid rgba(255, 255, 255, 8);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+
+#ModManagerTitle {
+    color: #D7D7D7;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+#ModCount {
+    color: #484848;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* ── Close button in header ── */
+#ModManagerClose {
+    background-color: transparent;
+    border: none;
     border-radius: 8px;
-    margin-bottom: 4px;
+    color: #585858;
+    font-size: 18px;
+    padding: 0px;
+}
+
+#ModManagerClose:hover {
+    background-color: rgba(255, 255, 255, 8);
+    color: #D7D7D7;
+}
+
+/* ── Search row (pill bar + icon buttons) ── */
+#SearchRow {
+    background-color: rgba(255, 255, 255, 4);
+    border: 1px solid rgba(255, 255, 255, 7);
+    border-radius: 12px;
+}
+
+#ModSearch {
+    background-color: transparent;
+    border: none;
+    color: #D7D7D7;
+    font-size: 13px;
+    padding: 0px 6px;
+    selection-background-color: rgba(255, 255, 255, 15);
+}
+
+#ModSearch:focus {
+    background-color: transparent;
+    border: none;
+    outline: none;
+}
+
+#SearchIcon {
+    color: #484848;
+    font-size: 13px;
+    background: transparent;
+    border: none;
+    padding: 0px;
+}
+
+/* Divider between search and action buttons */
+#SearchDivider {
+    background-color: rgba(255, 255, 255, 8);
+    max-width: 1px;
+    min-width: 1px;
+}
+
+/* Refresh + open-folder icon buttons inside the search row */
+#SearchActionBtn {
+    background-color: transparent;
+    border: none;
+    border-radius: 7px;
+    padding: 4px;
+}
+
+#SearchActionBtn:hover {
+    background-color: rgba(255, 255, 255, 10);
+}
+
+#SearchActionBtn:pressed {
+    background-color: rgba(255, 255, 255, 5);
+}
+
+/* ── Mod image thumbnail ── */
+#ModImage {
+    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 6);
+    border: 1px solid rgba(255, 255, 255, 8);
+}
+
+/* ── Mod cards — mirrors SettingRow ── */
+#ModCard {
+    background-color: rgba(255, 255, 255, 4);
+    border: 1px solid rgba(255, 255, 255, 7);
+    border-radius: 10px;
 }
 
 #ModCard:hover {
-    background-color: rgba(50, 50, 50, 220);
-    border: 1px solid #00A2FF;
+    background-color: rgba(255, 255, 255, 7);
+    border: 1px solid rgba(255, 255, 255, 12);
 }
 
 #ModTitle {
-    color: #FFFFFF;
+    color: #E8E8E8;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 500;
 }
 
 #ModMeta {
-    color: #BBBBBB;
+    color: #707070;
+    font-size: 12px;
+}
+
+#ModAuthorLink {
+    color: #5B9BD5;
+    font-size: 12px;
+    text-decoration: underline;
+}
+
+#ModAuthorLink:hover {
+    color: #7DB8F0;
+}
+
+#ModVersion {
+    color: #484848;
+    font-family: 'Consolas', monospace;
     font-size: 11px;
 }
 
 #RestartBadge {
-    color: #FFA500;
+    color: #E8873A;
     font-size: 10px;
-    font-weight: bold;
-    padding: 3px 6px;
-    border: 1px solid #FFA500;
-    border-radius: 4px;
-    background-color: rgba(255, 165, 0, 20);
+    font-weight: 600;
+    padding: 2px 7px;
+    border: 1px solid rgba(232, 135, 58, 50);
+    border-radius: 5px;
+    background-color: rgba(232, 135, 58, 12);
 }
 
-/* Custom Scrollbar for the list */
+/* ── Empty-state label ── */
+#EmptyLabel {
+    color: #484848;
+    font-size: 13px;
+}
+
+/* ── Scroll area ── */
+QScrollArea {
+    background: transparent;
+    border: none;
+}
+
+#ScrollContent {
+    background: transparent;
+}
+
 QScrollBar:vertical {
     border: none;
     background: transparent;
-    width: 8px;
+    width: 6px;
+    margin: 4px 0;
 }
+
 QScrollBar::handle:vertical {
-    background: rgba(255, 255, 255, 40);
-    border-radius: 4px;
+    background: rgba(255, 255, 255, 18);
+    border-radius: 3px;
+    min-height: 24px;
 }
+
 QScrollBar::handle:vertical:hover {
-    background: rgba(255, 255, 255, 80);
+    background: rgba(255, 255, 255, 35);
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0px;
 }
 """
