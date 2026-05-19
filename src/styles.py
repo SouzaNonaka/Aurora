@@ -299,16 +299,6 @@ MOD_MANAGER_STYLE = """
     font-size: 11px;
 }
 
-#RestartBadge {
-    color: #E8873A;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 7px;
-    border: 1px solid rgba(232, 135, 58, 50);
-    border-radius: 5px;
-    background-color: rgba(232, 135, 58, 12);
-}
-
 /* ── Empty-state label ── */
 #EmptyLabel {
     color: #484848;
