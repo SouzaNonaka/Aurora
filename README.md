@@ -84,11 +84,11 @@ Aurora's Mod Manager supports a `mod.json` file inside your mod folder to displa
 | <img src="https://flagcdn.com/w20/ru.png" width="20"> Russian | ![0%](https://geps.dev/progress/0?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `ru.json` | No Translation |
 | <img src="https://flagcdn.com/w20/es.png" width="20"> Spanish | ![100%](https://geps.dev/progress/100?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `es.json` |
 | <img src="https://flagcdn.com/w20/fr.png" width="20"> French | ![0%](https://geps.dev/progress/0?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `fr.json` | No Translation |
-| <img src="https://flagcdn.com/w20/de.png" width="20"> German | ![0%](https://geps.dev/progress/0?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `de.json` | No Translation |
+| <img src="https://flagcdn.com/w20/de.png" width="20"> German | ![1000%](https://geps.dev/progress/100?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `de.json` |
 | <img src="https://flagcdn.com/w20/tr.png" width="20"> Turkish | ![100%](https://geps.dev/progress/100?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `tr.json` |
 | <img src="https://flagcdn.com/w20/cn.png" width="20"> Chinese (Simplified) | ![70%](https://geps.dev/progress/70?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `cn.json` | (Unofficial Translation) |
 | <img src="https://flagcdn.com/w20/jp.png" width="20"> Japanese | ![70%](https://geps.dev/progress/70?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `jp.json` | (Unofficial Translation) |
-| <img src="https://flagcdn.com/w20/kr.png" width="20"> Korean | ![70%](https://geps.dev/progress/0?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `kr.json` | No Translation |
+| <img src="https://flagcdn.com/w20/kr.png" width="20"> Korean | ![00%](https://geps.dev/progress/0?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `kr.json` | No Translation |
 
 ### ᅠ
 ## Contributors
