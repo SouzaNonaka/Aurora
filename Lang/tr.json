@@ -26,9 +26,18 @@
     "no_drive_line": "Tahrik Sistemini Kaldır",
     "no_drive_line_desc": "Araba sürerken oluşan 3D GPS sürüş çizgisini kaldırır. (Kaynak: Rokkudayo)",
     "search_mods": "Yerel modları ara...",
+    "mod_manager": "Mod Yöneticisi",
+    "mod_manager_desc_a": "/",
+    "mod_manager_desc_b": "ETKİN",
     "mod_manager_unknown": "Bilinmeyen",
     "mod_manager_author": "Yapımcısı: ",
     "mod_manager_restart": "YENİDEN BAŞLAT",
     "discord_rpc": "Discord RPC",
-    "discord_rpc_desc": "Discord RPC'yi aç/kapat"
+    "discord_rpc_desc": "Discord RPC'yi aç/kapat",
+    "update_available_title": "Güncelleme Mevcut",
+    "update_current_version": "Mevcut Sürüm",
+    "update_new_version": "Yeni Sürüm",
+    "update_available_message_a": "Aurora Launcher'ın yeni bir sürümü mevcut!",
+    "update_available_message_b": "GitHub'ı açıp en son güncellemeyi indirmek ister misiniz?",
+    "update_available_confirm": "Tarayıcıda Aç"
 }
