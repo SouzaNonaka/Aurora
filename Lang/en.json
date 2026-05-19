@@ -16,6 +16,7 @@
     "search_drives_message": "Aurora will scan all drives to locate your Neverness To Everness installation. This may take a few seconds.",
     "search": "Search",
     "cancel": "Cancel",
+    "confirm": "Confirm",
     "toast_game_found": "Game found! Ready to launch.",
     "toast_game_not_found": "Could not find NTE. Set path manually in Settings.",
     "toast_launching": "Launching NTE...",
@@ -26,9 +27,18 @@
     "no_drive_line": "No Drive Line",
     "no_drive_line_desc": "Removes the 3D GPS driving line created while driving. (Credits: Rokkudayo)",
     "search_mods": "Search local mods...",
+    "mod_manager": "Mod Manager",
+    "mod_manager_desc_a": "OF",
+    "mod_manager_desc_b": "ENABLED",
     "mod_manager_unknown": "Unknown",
     "mod_manager_author": "by ",
     "mod_manager_restart": "RESTART",
     "discord_rpc": "Discord RPC",
-    "discord_rpc_desc": "Toggle the in-built Discord RPC"
+    "discord_rpc_desc": "Toggle the in-built Discord RPC",
+    "update_available_title": "Update Available",
+    "update_current_version": "Current Version",
+    "update_new_version": "New Version",
+    "update_available_message_a": "A new version of Aurora Launcher is available!",
+    "update_available_message_b": "Would you like to open GitHub and download the latest update?",
+    "update_available_confirm": "Open in Browser"
 }
