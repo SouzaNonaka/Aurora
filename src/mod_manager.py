@@ -22,7 +22,6 @@ class ModManager:
         self.mods_dir.mkdir(parents=True, exist_ok=True)
 
     def scan_mods(self) -> list[ModEntry]:
-        """Scans the Mods folder and returns a list of ModEntry objects."""
         mods = []
         if not self.mods_dir.exists():
             return mods
@@ -40,7 +39,6 @@ class ModManager:
             is_enabled = not raw_name.startswith("disabled_")
             clean_name = raw_name.replace("disabled_", "").replace("_P", "")
 
-            # Baseline dictionary with explicitly evaluated fallbacks
             mod_data = {
                 "folder_name": raw_name,
                 "display_name": clean_name,
@@ -51,7 +49,6 @@ class ModManager:
                 "has_json": False
             }
 
-            # Attempt to parse Aurora-native metadata if the mod contains it
             json_path = folder / "mod.json"
             if json_path.exists():
                 try:
@@ -73,10 +70,6 @@ class ModManager:
         return sorted(mods, key=lambda x: x.display_name.lower())
 
     def toggle_mod(self, mod: ModEntry) -> str:
-        """
-        Renames the folder on disk to add/remove the 'disabled_' prefix.
-        Returns the new folder name on success, or None on failure.
-        """
         old_path = self.mods_dir / mod.folder_name
         
         if mod.is_enabled: # Disabled Clause
@@ -90,8 +83,19 @@ class ModManager:
             if new_path.exists():
                 logger.error(f"Cannot toggle mod: {new_name} already exists!")
                 return None
-                
-            old_path.rename(new_path)
+
+            try:
+                old_path.rename(new_path)
+            except PermissionError:
+                import subprocess
+                result = subprocess.run(
+                    f'rename "{old_path}" "{new_path.name}"',
+                    shell=True, capture_output=True, text=True
+                )
+                if result.returncode != 0:
+                    logger.error(f"Shell rename also failed: {result.stderr.strip()}")
+                    return None
+
             logger.info(f"Mod toggled: {mod.folder_name} -> {new_name}")
             return new_name
         except Exception as e:
