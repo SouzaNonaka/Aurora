@@ -22,10 +22,6 @@ myappid = 'datura.aurora.nte.1000'
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 def run_as_admin():
-    """
-    Re-launches the process with elevated privileges if not already admin.
-    Works correctly for both frozen EXEs (PyInstaller) and plain Python scripts. (mayhaps, i hope so.)
-    """
     if ctypes.windll.shell32.IsUserAnAdmin():
         return True
 
