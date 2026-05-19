@@ -9,7 +9,6 @@ from src.logger import logger
 from src.discord_rpc import DiscordRPC
 
 def get_app_dir():
-    """Returns the directory of the EXE (frozen) or the project root (dev)."""
     if getattr(sys, 'frozen', False):
         return os.path.dirname(sys.executable)
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -51,11 +50,6 @@ class AuroraEngine:
         }
 
     def _remove_junction(self, path):
-        """
-        Safely removes a junction link without deleting the files it points to.
-        Uses rmdir without /S so it only removes the link itself, not the contents.
-        Returns True on success.
-        """
         result = subprocess.run(
             f'rmdir "{path}"',
             shell=True, capture_output=True, text=True
@@ -71,13 +65,6 @@ class AuroraEngine:
         return result.returncode == 0
 
     def _kill_nte(self):
-        """
-        Terminates all NTE-related processes so they can't hold file locks.
-        Called at the start of inject() AND inside sanitize() for cleanup.
-        NTEGlobal.exe holds a handle on NTEGlobal\version.dll — it MUST
-        be killed before any file operations or shutil.copy will get
-        PermissionError even if the file appears deletable.
-        """
         targets = [
             "NTEGlobalLauncher.exe",    # The Anti-Cheat will flag Aurora and crash it since it edits directory files, closing Launcher prevents this.
             "NTEGlobal.exe",            # Holds lock on NTEGlobal\version.dll
@@ -109,7 +96,6 @@ class AuroraEngine:
                     time.sleep(1)
 
     def sanitize(self):
-        """Forcefully removes injected files after the game closes."""
         logger.info("Starting system sanitation...")
         self._kill_nte()
 
@@ -148,7 +134,6 @@ class AuroraEngine:
                         logger.warning(f"Failed to remove mod junction: {item.name}")
 
     def inject(self):
-        """Applies DLLs and creates the Mod Junction with existence checks."""
         logger.info("Injecting into NTE...")
         logger.info(f"Game path:  {self.game_path}")
         logger.info(f"Bin path:   {self.bin_path}")
@@ -244,7 +229,7 @@ class AuroraEngine:
 
             logger.info(f"Successfully deployed {deployed_count} mods via junctions.")
 
-            # Copy no-drive-line pak files directly into ~Aurora if the feature is enabled.
+            # Copy no-drive-line pak files directly into the PAKs folder if the feature is enabled.
             if self.no_drive_line:
                 logger.info("No Drive Line is enabled, copying built-in pak files")
                 ndl_files = ["auddl_P.pak", "auddl_P.utoc", "auddl_P.ucas"]
@@ -272,7 +257,6 @@ class AuroraEngine:
             return False
 
     def monitor_game(self):
-        """Wait for NTE to launch then close, then trigger cleanup."""
         game_started = False
         launcher_missing_seconds = 0
         launcher_ever_seen = False
@@ -315,8 +299,7 @@ class AuroraEngine:
 
                 if launcher_missing_seconds >= MAX_GRACE_SECONDS:
                     logger.warning(
-                        f"NTE Launcher failed to resolve within {MAX_GRACE_SECONDS}s "
-                        f"of continuous absence. Aborting monitor."
+                        f"NTE Launcher failed to resolve within {MAX_GRACE_SECONDS}s of continuous absence. Aborting monitor."
                     )
                     self.sanitize()
                     return
