@@ -74,7 +74,7 @@ def _close_pipe(handle):
 class DiscordRPC(QThread):
     CID = "1505644188060876920"
 
-    def __init__(self, client_id: str = None, parent=None):
+    def __init__(self, client_id: str = "", parent=None):
         super().__init__(parent)
         self._client_id  = client_id or self.CID
         self._handle     = None
@@ -85,6 +85,17 @@ class DiscordRPC(QThread):
         self._pending_activity: dict | None = None
         self._start_timestamp = int(time.time())
 
+    def _get_buttons(self) -> list:
+        DISCORD_INVITE = "https://discord.gg/565jfeYsbp"
+        return [{
+                "label": "Join Discord Server",
+                "url": DISCORD_INVITE
+            },
+            {
+                "label": "Github",
+                "url": "https://github.com/Daturaxoxo/Aurora"
+            }]
+
     def set_idle(self):
         self._queue_activity({
             "state":   "Idle",
@@ -94,6 +105,7 @@ class DiscordRPC(QThread):
                 "large_image": "aurora_logo",
                 "large_text":  "Aurora Mod Launcher",
             },
+            "buttons": self._get_buttons()
         })
 
     def set_launching(self):
@@ -105,6 +117,7 @@ class DiscordRPC(QThread):
                 "large_image": "aurora_logo",
                 "large_text":  "Aurora Mod Launcher",
             },
+            "buttons": self._get_buttons()
         })
 
     def set_in_game(self):
@@ -118,6 +131,7 @@ class DiscordRPC(QThread):
                 "small_image": "playing",
                 "small_text":  "In-game",
             },
+            "buttons": self._get_buttons()
         })
 
     def stop(self):
