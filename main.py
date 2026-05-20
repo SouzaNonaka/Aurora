@@ -1,11 +1,9 @@
 import sys
 import ctypes
 import traceback
-import os
 from PyQt6.QtWidgets import QApplication
 from src.ui_main import AuroraUI
 from src.engine import AuroraEngine
-from src.utils import resource_path
 from src.path_finder import get_game_directory
 from src import config_manager as cfg
 from src.discord_rpc import DiscordRPC
