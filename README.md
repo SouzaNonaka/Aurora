@@ -89,7 +89,7 @@ Aurora's Mod Manager supports a `mod.json` file inside your mod folder to displa
 | <img src="https://flagcdn.com/w20/cn.png" width="20"> Chinese (Simplified) | ![70%](https://geps.dev/progress/70?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `cn.json` | (Unofficial Translation) |
 | <img src="https://flagcdn.com/w20/jp.png" width="20"> Japanese | ![70%](https://geps.dev/progress/70?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `jp.json` | (Unofficial Translation) |
 | <img src="https://flagcdn.com/w20/kr.png" width="20"> Korean | ![0%](https://geps.dev/progress/0?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `kr.json` | No Translation |
-| <img src="https://flagcdn.com/w20/kr.png" width="20"> Vietnamese | ![100%](https://geps.dev/progress/100?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `vi.json` | Credits: [@TanNhatCMS](https://github.com/TanNhatCMS) |
+| <img src="https://flagcdn.com/w20/vn.png" width="20"> Vietnamese | ![100%](https://geps.dev/progress/100?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `vi.json` | Credits: [@TanNhatCMS](https://github.com/TanNhatCMS) |
 
 ### ᅠ
 ## Contributors
