@@ -3,6 +3,8 @@ import sys
 import json
 from pathlib import Path
 
+from scandir_rs import Scandir
+
 def get_app_dir():
     if getattr(sys, 'frozen', False):
         return os.path.dirname(sys.executable)
@@ -44,33 +46,36 @@ def validate_path(path):
 
 def _candidate_directories():
     checked = set()
-
+    
     def emit(path):
         p = str(Path(path))
         if p not in checked:
             checked.add(p)
             yield p
-
-    # Check 1. Common program locations.
+            
     for env_var in ("ProgramFiles", "ProgramFiles(x86)", "ProgramW6432"):
         base = os.environ.get(env_var)
         if base:
             yield from emit(os.path.join(base, GAME_FOLDER_NAME))
 
-    # Check 2. Scan every available drive root for specific folder names (A–Z)
-    for drive_letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+    for drive_letter in "CDEFGHIJKLMNOPQRSTUVWXYZ":
         drive = f"{drive_letter}:\\"
-        if os.path.exists(drive):
-            # Check common install roots on every drive
-            for subfolder in (
-                "Program Files",
-                "Program Files (x86)",
-                "Games",
-                "SteamLibrary\\steamapps\\common",
-                "Steam\\steamapps\\common",
-                "Epic Games",
-            ):
-                yield from emit(os.path.join(drive, subfolder, GAME_FOLDER_NAME))
+        
+        if not os.path.exists(drive):
+            continue
+
+
+        for dirEntry in Scandir(
+            drive, 
+            dir_exclude=["$RECYCLE.BIN", "Windows", "AppData", "ProgramData", "System Volume Information"], 
+            skip_hidden=True
+        ):
+            if "NTEGlobalLauncher.exe" in dirEntry.path and "NTEGlobal" in dirEntry.path:
+                path = Path(f"{drive}{dirEntry.path}").parent
+                
+                if path not in checked:
+                    checked.add(path)
+                    yield from emit(path)
 
 def get_game_directory():
     # Lazy import to avoid circular dependency at module load time, I f####ng hate you for this Python.
@@ -92,7 +97,7 @@ def get_game_directory():
             _warn(f"Saved config path is no longer valid: {saved_path}")
 
     # Priority 2: Search all drives and known download locations
-    _log("Searching for NTE installation across all drives...")
+    _log("Searching for NTE installation across all drives (this may take a moment)...")
     for candidate in _candidate_directories():
         if validate_path(candidate):
             _log(f"Found NTE at: {candidate}")
