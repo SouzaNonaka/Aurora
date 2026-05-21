@@ -24,6 +24,7 @@ class Key:
     EXTENSIVE_LOGGING = "extensive_logging"
     EXPORT_CONSOLE    = "export_console"
     UI_SCALING        = "ui_scaling"
+    UI_MINIMIZATION   = "ui_min"
 
 DEFAULTS = {
     Key.GAME_PATH:         "",
@@ -34,6 +35,7 @@ DEFAULTS = {
     Key.DISCORD_RPC:       True,
     Key.EXTENSIVE_LOGGING: False,
     Key.UI_SCALING:        1.0,
+    Key.UI_MINIMIZATION:   True,
 }
 
 def get_app_dir():

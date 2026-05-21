@@ -494,7 +494,7 @@ class AuroraUI(QMainWindow):
         if found_path:
             logger.info(f"Drive search found NTE at: {found_path}")
             self.current_path = found_path
-            cfg.set(cfg.Key.GAME_PATH)
+            cfg.set(cfg.Key.GAME_PATH, found_path)
             from src.engine import AuroraEngine
             self.engine = AuroraEngine(found_path, censorship_removal=cfg.get(cfg.Key.CENSORSHIP_REMOVE), no_drive_line=cfg.get(cfg.Key.NO_DRIVE_LINE))
             try:
@@ -638,6 +638,8 @@ class AuroraUI(QMainWindow):
         event.accept()
 
     def _send_to_tray(self):
+        if not cfg.get(cfg.Key.UI_MINIMIZATION):
+            return
         self._tray.show()
         self.hide()
         self._overlay_win = AuroraOverlayWindow(
@@ -657,6 +659,8 @@ class AuroraUI(QMainWindow):
             self._restore_from_tray()
 
     def _on_session_ended(self):
+        if not cfg.get(cfg.Key.UI_MINIMIZATION):
+            return
         self._restore_from_tray()
         logger.info("Session ended, Aurora restored from tray.", extra={"el": True})
 

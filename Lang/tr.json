@@ -5,6 +5,8 @@
     "developer": "Geliştirici",
     "language": "Dil",
     "language_desc": "Arayüz gösterim dili",
+    "ui_minimization_title": "Başladıktan sonra Arayüzü Kapat",
+    "ui_minimization_desc": "Oyun başladıktan sonra Aurora'yı kapatır.",
     "game_directory": "Oyun Dizini",
     "browse": "Gözat",
     "developer_mode": "Geliştirici Modu",

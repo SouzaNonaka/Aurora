@@ -5,6 +5,8 @@
     "developer": "Developer",
     "language": "Language",
     "language_desc": "Interface display language",
+    "ui_minimization_title": "Interface Minimization",
+    "ui_minimization_desc": "Closes the launcher after the game starts.",
     "game_directory": "Game Directory",
     "browse": "Browse",
     "developer_mode": "Developer Mode",

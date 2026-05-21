@@ -5,6 +5,8 @@
     "developer": "Nhà phát triển",
     "language": "Ngôn ngữ",
     "language_desc": "Ngôn ngữ hiển thị giao diện",
+    "ui_minimization_title": "Tối ưu hóa giao diện",
+    "ui_minimization_desc": "Đóng trình khởi chạy sau khi trò chơi bắt đầu.",
     "game_directory": "Thư mục trò chơi",
     "browse": "Duyệt...",
     "developer_mode": "Chế độ nhà phát triển",

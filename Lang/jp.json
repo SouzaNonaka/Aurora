@@ -6,6 +6,8 @@
     "developer": "開発者",
     "language": "言語",
     "language_desc": "インターフェースの表示言語",
+    "ui_minimization_title": "インターフェースの最小化",
+    "ui_minimization_desc": "ゲームの開始後、ランチャーを閉じます。",
     "game_directory": "ゲームディレクトリ",
     "browse": "参照",
     "developer_mode": "デベロッパーモード",

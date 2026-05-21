@@ -186,6 +186,8 @@ class SettingsOverlay(QFrame):
         self._row_ndl.set_description(t("no_drive_line_desc"))
         self._row_dev.set_title(t("developer_mode"))
         self._row_dev.set_description(t("developer_mode_desc"))
+        self._row_min.set_title(t("ui_minimization_title"))
+        self._row_min.set_description(t("ui_minimization_desc"))
         self._row_EL.set_title(t("extensive_logging"))
         self._row_EL.set_description(t("extensive_logging_desc"))
         self._lbl_export.setText(t("export_file_title"))
@@ -296,11 +298,20 @@ class SettingsOverlay(QFrame):
             self._lang_box.setCurrentIndex(idx)
         self._lang_box.currentTextChanged.connect(self._on_language_changed)
 
+        self._row_min = SettingRow(
+            title="Launcher Minimization",
+            description="",
+            checked=cfg.get(cfg.Key.UI_MINIMIZATION),
+            on_toggle=self._toggle_min_mode,
+        )
+
         lang_row.addLayout(lang_text)
         lang_row.addStretch()
         lang_row.addWidget(self._lang_box)
 
         layout.addWidget(lang_card)
+        layout.addSpacing(10)
+        layout.addWidget(self._row_min)
         layout.addSpacing(24)
 
         # Integration
@@ -531,6 +542,9 @@ class SettingsOverlay(QFrame):
             if hasattr(main_ui, 'rpc'):
                 main_ui.rpc.stop()
 
+    def _toggle_min_mode(self, new_state):
+        cfg.set(cfg.Key.UI_MINIMIZATION, new_state)
+
     def _on_scale_slider_moved(self, value: int):
         snapped = round(value / 5) * 5 # Snap to the nearest 5 to make it look smooth
         if self._scale_slider.value() != snapped:
@@ -625,9 +639,9 @@ class SettingsOverlay(QFrame):
         """)
         self._btn_export_console.clicked.connect(self._handle_export_console)
         layout.addWidget(self._row_dev)
-        layout.addSpacing(8)
+        layout.addSpacing(10)
         layout.addWidget(self._row_EL)
-        layout.addSpacing(8)
+        layout.addSpacing(10)
         export_row.addLayout(export_text)
         export_row.addStretch()
         export_row.addWidget(self._btn_export_console)

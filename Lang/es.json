@@ -5,6 +5,8 @@
     "developer": "Desarrollador",
     "language": "Lenguaje",
     "language_desc": "Idioma de la interfaz",
+    "ui_minimization_title": "Reducción de la interfaz",
+    "ui_minimization_desc": "Cierra el lanzador una vez que comienza el juego.",
     "game_directory": "Directorio del juego",
     "browse": "Buscar",
     "developer_mode": "Modo desarrollador",
