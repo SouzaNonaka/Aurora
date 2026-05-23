@@ -26,6 +26,7 @@ class Key:
     EXPORT_CONSOLE    = "export_console"
     UI_SCALING        = "ui_scaling"
     UI_MINIMIZATION   = "ui_min"
+    USE_HARD_LINKS    = "use_hard_links"
 
 DEFAULTS = {
     Key.GAME_PATH:         "",
@@ -37,6 +38,7 @@ DEFAULTS = {
     Key.EXTENSIVE_LOGGING: False,
     Key.UI_SCALING:        1.0,
     Key.UI_MINIMIZATION:   True,
+    Key.USE_HARD_LINKS:    False
 }
 
 def get_app_dir():

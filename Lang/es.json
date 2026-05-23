@@ -52,5 +52,9 @@
     "mod_manager_tooltip": "Gestionar mods",
     "ko-fi_tooltip": "Apoya a Aurora en Ko-Fi",
     "discord_tooltip": "Únete al servidor de Discord",
-    "gamebanana_tooltip": "Página de GameBanana"
+    "gamebanana_tooltip": "Página de GameBanana",
+    "ui_scaling": "Escala de la interfaz",
+    "ui_scaling_desc": "Ajusta la escala de la interfaz del juego (requiere reiniciar) (Créditos: Tayuya)",
+    "hard_links": "Usar enlaces duros",
+    "hard_links_desc": "Usar enlaces duros/uniones para gestionar mods. (NO RECOMENDADO)"
 }

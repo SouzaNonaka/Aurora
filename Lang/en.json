@@ -54,6 +54,8 @@
     "ko-fi_tooltip": "Support Aurora on Ko-Fi",
     "discord_tooltip": "Join the Discord Server",
     "gamebanana_tooltip": "GameBanana Page",
-    "ui_scaling":      "UI Scaling",
-    "ui_scaling_desc": "Adjusts the in-game interface scale (restart required) (Credits: Tayuya)"
+    "ui_scaling": "UI Scaling",
+    "ui_scaling_desc": "Adjusts the in-game interface scale (restart required) (Credits: Tayuya)",
+    "hard_links": "Use Hard Links",
+    "hard_links_desc": "Use hard links/junctions for handling mods. (NOT RECOMMENDED)"
 }
