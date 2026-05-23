@@ -1,13 +1,15 @@
 import webbrowser
+import ctypes
 from src.utils import resource_path
 from pathlib import Path
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout,
-    QPushButton, QLabel, QFrame, QGraphicsOpacityEffect, 
+    QPushButton, QLabel, QFrame, QGraphicsOpacityEffect
 )
-from PyQt6.QtCore import Qt, QPropertyAnimation, QVariantAnimation, QEasingCurve
-from PyQt6.QtGui import QPixmap, QPainter, QColor
+from PyQt6.QtCore import Qt, QPropertyAnimation, QVariantAnimation, QEasingCurve, QTimer
+from PyQt6.QtGui import QPixmap, QPainter, QColor, QIcon
 from src.styles import POPUP_STYLE
+from src.logger import logger
 from src.translator import t
 
 class AnimatedToggle(QWidget):
@@ -300,3 +302,130 @@ class PopupDialog(QWidget):
         self.anim.setDirection(QPropertyAnimation.Direction.Backward)
         self.anim.finished.connect(self.deleteLater)
         self.anim.start()
+
+# OVERLAY WINDOW
+class AuroraOverlayWindow(QWidget):
+    DISPLAY_MS = 6000
+    FADE_MS    = 1000
+
+    def __init__(self, title="Aurora Mod Loader", subtitle="Mods are active"):
+        super().__init__(None)
+        self.setWindowFlags(
+            Qt.WindowType.FramelessWindowHint |
+            Qt.WindowType.WindowStaysOnTopHint |
+            Qt.WindowType.Tool |
+            Qt.WindowType.WindowTransparentForInput
+        )
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
+        self.setFixedSize(300, 64)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(18, 0, 18, 0)
+        layout.setSpacing(12)
+        layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+
+        # Icon
+        icon_lbl = QLabel()
+        icon_pix = QIcon(resource_path("Bin/Assets/logo1024_wn.png")).pixmap(30, 30)
+        icon_lbl.setPixmap(icon_pix)
+        icon_lbl.setFixedSize(30, 30)
+
+        text_col = QVBoxLayout()
+        text_col.setSpacing(1)
+        text_col.addStretch()
+
+        lbl_title = QLabel(title)
+        lbl_title.setStyleSheet("""
+            color: #E0E0E0; 
+            font-size: 14px; 
+            font-weight: 600; 
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        """)
+
+        lbl_sub = QLabel(subtitle)
+        lbl_sub.setStyleSheet("""
+            color: #AAAAAA; 
+            font-size: 12px;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        """)
+
+        text_col.addWidget(lbl_title)
+        text_col.addWidget(lbl_sub)
+        text_col.addStretch()
+
+        layout.addWidget(icon_lbl)
+        layout.addLayout(text_col)
+        layout.addStretch() 
+
+        # Fade effect
+        self.opacity_effect = QGraphicsOpacityEffect(self)
+        self.setGraphicsEffect(self.opacity_effect)
+        self.opacity_effect.setOpacity(0)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        from PyQt6.QtGui import QColor
+        painter.setBrush(QColor(10, 8, 18, 210))
+        painter.setPen(QColor(60, 60, 80, 200))
+        painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 12, 12)
+        painter.end()
+
+    def show_over_game(self, game_rect=None):
+        if game_rect is not None:
+            x, y = game_rect.left, game_rect.top
+        else:
+            x, y = self._find_game_position()
+        # Top-left corner of the game window with a small margin
+        self.move(x + 20, y + 20)
+        self.show()
+        self._fade_in()
+
+    def _find_game_position(self):
+        try:
+            result = [20, 20]
+            def enum_cb(hwnd, _):
+                length = ctypes.windll.user32.GetWindowTextLengthW(hwnd)
+                if length > 0:
+                    buf = ctypes.create_unicode_buffer(length + 1)
+                    ctypes.windll.user32.GetWindowTextW(hwnd, buf, length + 1)
+                    title = buf.value.lower()
+                    if any(x in title for x in ["neverness", "htgame", "nte"]):
+                        rect = ctypes.wintypes.RECT()
+                        ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(rect))
+                        result[0], result[1] = rect.left, rect.top
+                        return False
+                return True
+
+            WNDENUMPROC = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.wintypes.HWND, ctypes.wintypes.LPARAM)
+            ctypes.windll.user32.EnumWindows(WNDENUMPROC(enum_cb), 0)
+            return result[0], result[1]
+        except Exception as e:
+            logger.error(f"Failed to find game position: {e}")
+            return 20, 20
+
+    def _fade_in(self):
+        self._anim = QPropertyAnimation(self.opacity_effect, b"opacity")
+        self._anim.setDuration(400)
+        self._anim.setStartValue(0.0)
+        self._anim.setEndValue(1.0)
+        self._anim.finished.connect(lambda: QTimer.singleShot(self.DISPLAY_MS, self._fade_out))
+        self._anim.start()
+
+        total_ms = self.DISPLAY_MS + self.FADE_MS + 1000
+        QTimer.singleShot(total_ms, self._force_close)
+
+    def _fade_out(self):
+        self._anim = QPropertyAnimation(self.opacity_effect, b"opacity")
+        self._anim.setDuration(self.FADE_MS)
+        self._anim.setStartValue(1.0)
+        self._anim.setEndValue(0.0)
+        self._anim.finished.connect(self.hide)
+        self._anim.finished.connect(self.deleteLater)
+        self._anim.start()
+
+    def _force_close(self):
+        if not self.isHidden():
+            self.hide()
+            self.deleteLater()

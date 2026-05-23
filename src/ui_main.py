@@ -18,7 +18,7 @@ from src import config_manager as cfg
 from src.translator import Translator, t
 from src.engine import get_app_dir
 from src.mod_manager import ModManager
-from src.ui.elements import PopupDialog
+from src.ui.elements import PopupDialog, AuroraOverlayWindow
 from src.ui.settings import SettingsOverlay
 from src.utils import GetOnlineVersion, parse_version
 from src.ui.dev_console import DevConsolePanel
@@ -66,126 +66,6 @@ class DriveSearchThread(QThread):
         result = get_game_directory()
         self.finished.emit(result or "")
 
-
-# OVERLAY WINDOW
-class AuroraOverlayWindow(QWidget):
-    DISPLAY_MS = 6000
-    FADE_MS    = 1000
-
-    def __init__(self, title="Aurora Mod Loader", subtitle="Mods are active"):
-        super().__init__(None)
-        self.setWindowFlags(
-            Qt.WindowType.FramelessWindowHint |
-            Qt.WindowType.WindowStaysOnTopHint |
-            Qt.WindowType.Tool |
-            Qt.WindowType.WindowTransparentForInput
-        )
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
-        self.setFixedSize(300, 64)
-
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(18, 0, 18, 0)
-        layout.setSpacing(12)
-        layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
-
-        # Icon
-        icon_lbl = QLabel()
-        icon_pix = QIcon(resource_path("Bin/Assets/logo1024_wn.png")).pixmap(30, 30)
-        icon_lbl.setPixmap(icon_pix)
-        icon_lbl.setFixedSize(30, 30)
-
-        text_col = QVBoxLayout()
-        text_col.setSpacing(1)
-        text_col.addStretch()
-
-        lbl_title = QLabel(title)
-        lbl_title.setStyleSheet("""
-            color: #E0E0E0; 
-            font-size: 14px; 
-            font-weight: 600; 
-            font-family: 'Segoe UI', system-ui, sans-serif;
-        """)
-
-        lbl_sub = QLabel(subtitle)
-        lbl_sub.setStyleSheet("""
-            color: #AAAAAA; 
-            font-size: 12px;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-        """)
-
-        text_col.addWidget(lbl_title)
-        text_col.addWidget(lbl_sub)
-        text_col.addStretch()
-
-        layout.addWidget(icon_lbl)
-        layout.addLayout(text_col)
-        layout.addStretch() 
-
-        # Fade effect
-        self.opacity_effect = QGraphicsOpacityEffect(self)
-        self.setGraphicsEffect(self.opacity_effect)
-        self.opacity_effect.setOpacity(0)
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        from PyQt6.QtGui import QColor
-        painter.setBrush(QColor(10, 8, 18, 210))
-        painter.setPen(QColor(60, 60, 80, 200))
-        painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 12, 12)
-        painter.end()
-
-    def show_over_game(self, game_rect=None):
-        if game_rect is not None:
-            x, y = game_rect.left, game_rect.top
-        else:
-            x, y = self._find_game_position()
-        # Top-left corner of the game window with a small margin
-        self.move(x + 20, y + 20)
-        self.show()
-        self._fade_in()
-
-    def _find_game_position(self):
-        try:
-            result = [20, 20]
-            def enum_cb(hwnd, _):
-                length = ctypes.windll.user32.GetWindowTextLengthW(hwnd)
-                if length > 0:
-                    buf = ctypes.create_unicode_buffer(length + 1)
-                    ctypes.windll.user32.GetWindowTextW(hwnd, buf, length + 1)
-                    title = buf.value.lower()
-                    if any(x in title for x in ["neverness", "htgame", "nte"]):
-                        rect = ctypes.wintypes.RECT()
-                        ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(rect))
-                        result[0], result[1] = rect.left, rect.top
-                        return False
-                return True
-
-            WNDENUMPROC = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.wintypes.HWND, ctypes.wintypes.LPARAM)
-            ctypes.windll.user32.EnumWindows(WNDENUMPROC(enum_cb), 0)
-            return result[0], result[1]
-        except Exception as e:
-            logger.error(f"Failed to find game position: {e}")
-            return 20, 20
-
-    def _fade_in(self):
-        self._anim = QPropertyAnimation(self.opacity_effect, b"opacity")
-        self._anim.setDuration(400)
-        self._anim.setStartValue(0.0)
-        self._anim.setEndValue(1.0)
-        self._anim.finished.connect(lambda: QTimer.singleShot(self.DISPLAY_MS, self._fade_out))
-        self._anim.start()
-
-    def _fade_out(self):
-        self._anim = QPropertyAnimation(self.opacity_effect, b"opacity")
-        self._anim.setDuration(self.FADE_MS)
-        self._anim.setStartValue(1.0)
-        self._anim.setEndValue(0.0)
-        self._anim.finished.connect(self.close)
-        self._anim.start()
-
-
 # MAIN UI
 class AuroraUI(QMainWindow):
     def __init__(self, engine, current_path):
@@ -202,7 +82,6 @@ class AuroraUI(QMainWindow):
         self.setWindowTitle("Aurora Launcher")
         self.setWindowIcon(QIcon(resource_path("Bin/Assets/logo.ico")))
         
-        # Load saved language and apply
         Translator.load(cfg.get(cfg.Key.LANGUAGE))
         Translator.language_changed.connect(self.retranslate_ui)
         self.retranslate_ui()
@@ -211,25 +90,20 @@ class AuroraUI(QMainWindow):
         self.central_widget.setObjectName("CentralWidget")
         self.setCentralWidget(self.central_widget)
 
-        # Background image, lowest z-order
         self.bg_widget = BackgroundWidget(resource_path("Bin/Assets/background.jpg"), self.central_widget)
         self.bg_widget.setGeometry(0, 0, 1280, 720)
         self.bg_widget.lower()
 
-        # Gradient + frosted panel overlay
         self._overlay = OverlayWidget(self.central_widget)
         self._overlay.setGeometry(0, 0, 1280, 720)
 
-        # Top bar, pinned to top
         self.top_bar = QFrame(self.central_widget)
         self.top_bar.setObjectName("TopBar")
         self.top_bar.setGeometry(0, 0, 1280, 60)
         self.setup_top_bar()
 
-        # Bottom bar, pinned to bottom of the main window
         self.setup_bottom_bar()
 
-        # Dev console, absolutely positioned overlay below the main window
         self._dev_console = DevConsolePanel(self.central_widget)
         self._dev_console.hide()
 
@@ -237,11 +111,9 @@ class AuroraUI(QMainWindow):
         self.top_bar.raise_()
         self._bottom_bar.raise_()
 
-        # Settings overlay
         self.settings_menu = SettingsOverlay(self.central_widget)
         self.btn_settings.clicked.connect(self.toggle_settings)
 
-        # Apply saved dev mode
         if cfg.get(cfg.Key.DEV_MODE):
             self.set_dev_console(True)
 
@@ -324,6 +196,11 @@ class AuroraUI(QMainWindow):
         self.btn_settings.setIconSize(QSize(32, 32))
         self.btn_settings.setToolTip(t("settings_tooltip"))
 
+        self.btn_faq = QPushButton()
+        self.btn_faq.setIcon(QIcon(resource_path("Bin/Assets/favourite.png")))
+        self.btn_faq.setIconSize(QSize(32, 32))
+        self.btn_faq.setToolTip(t("settings_tooltip"))
+
         self.logo = QLabel()
         logo_pix = QPixmap(resource_path("Bin/Assets/logo1024_wn.png"))
         if not logo_pix.isNull():
@@ -344,6 +221,7 @@ class AuroraUI(QMainWindow):
         self.btn_close.clicked.connect(self.close)
 
         tb_layout.addWidget(self.btn_settings)
+        tb_layout.addWidget(self.btn_faq)
         tb_layout.addStretch()
         tb_layout.addWidget(self.logo)
         tb_layout.addStretch()

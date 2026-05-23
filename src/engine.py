@@ -9,6 +9,15 @@ from src.logger import logger
 from src.discord_rpc import DiscordRPC
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+# Process List
+launchers = {
+    "ntegloballauncher.exe",
+    "ntelauncher.exe",
+    "ntetwlauncher.exe",
+    "nteglobal.exe",
+    "nteglobalgame.exe",
+}
+
 def get_app_dir():
     if getattr(sys, 'frozen', False):
         return os.path.dirname(sys.executable)
@@ -87,9 +96,8 @@ class AuroraEngine:
             for _ in range(5):
                 try:
                     with open(dll_path, 'r+b'):
-                        break  # File is accessible, moving onto the next step.
+                        break
                 except (PermissionError, OSError):
-                    # File isn't accessible, waiting until it is (5 retries before dumping)
                     logger.warning("global_dll still locked, Aurora is waiting...", extra={'el': True})
                     time.sleep(1)
 
@@ -314,11 +322,27 @@ class AuroraEngine:
             return
 
         # Phase 2: Active game tracking
-        while True:
-            time.sleep(5)
-            active = {p.name().lower() for p in psutil.process_iter(['name'])}
-            if "htgame.exe" not in active:
-                break
+        ht_procs = [p for p in psutil.process_iter(['name']) if p.name().lower() == "htgame.exe"]
+        if ht_procs:
+            psutil.wait_procs(ht_procs, timeout=None)
+            logger.info("Used ht_procs method")
+        else:
+            logger.info("ht_procs not active, falling back to the old method")
+            while True:
+                time.sleep(2)
+                active = {p.name().lower() for p in psutil.process_iter(['name'])}
+                if "htgame.exe" not in active:
+                    break
 
         logger.info("NTE was closed, initialising clean-up process...")
         self.sanitize(kill_first=False)
+
+        # Watch for the NTE Launcher after sanitization ends
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            active = {p.name().lower() for p in psutil.process_iter(['name'])}
+            found = launchers & active
+            if found:
+                self._kill_nte()
+                break
+            time.sleep(0.5)
