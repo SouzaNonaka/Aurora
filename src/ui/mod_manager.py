@@ -3,7 +3,7 @@ import sys
 import shutil
 import subprocess
 import zipfile
-from src.utils import resource_path
+from src.utils import get_mods_path, resource_path
 from pathlib import Path
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout,
@@ -16,7 +16,6 @@ from src.styles import MOD_MANAGER_STYLE
 from src.translator import t
 from src.engine import get_app_dir
 from src.ui.elements import ModCard
-from src import config_manager as cfg
 
 class InstallZone(QFrame):
     files_installed = pyqtSignal(list)
@@ -258,7 +257,7 @@ class ModManagerOverlay(QFrame):
         self.list_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.scroll.setWidget(self.list_container)
 
-        mods_path = Path(get_app_dir()) / "Mods"
+        mods_path = get_mods_path()
         self.install_zone = InstallZone(mods_path, self)
         self.install_zone.files_installed.connect(self._on_files_installed)
 
@@ -274,10 +273,7 @@ class ModManagerOverlay(QFrame):
         self.refresh_list()
 
     def _open_mods_folder(self):
-        if cfg.get(cfg.Key.USE_HARD_LINKS):
-            mods_path = Path(get_app_dir()) / "Mods"
-        else:
-            mods_path = Path(cfg.get(cfg.Key.GAME_PATH)) / "Client/WindowsNoEditor/HT/Content/Paks/AuroraMods"
+        mods_path = get_mods_path()
         print(mods_path)
         if not mods_path.exists():
             mods_path.mkdir(parents=True, exist_ok=True)

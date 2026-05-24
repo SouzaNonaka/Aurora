@@ -23,7 +23,7 @@ from src.engine import get_app_dir
 from src.mod_manager import ModManager
 from src.ui.elements import PopupDialog, AuroraOverlayWindow
 from src.ui.settings import SettingsOverlay
-from src.utils import GetOnlineVersion, parse_version
+from src.utils import GetOnlineVersion, parse_version, get_mods_path
 from src.ui.dev_console import DevConsolePanel
 from src.ui.widgets import BackgroundWidget, OverlayWidget
 from src.ui.notification import ToastNotification
@@ -246,10 +246,7 @@ class AuroraUI(QMainWindow):
         bottom_layout = QHBoxLayout(self._bottom_bar)
         bottom_layout.setContentsMargins(30, 15, 30, 20)
 
-        if cfg.get(cfg.Key.USE_HARD_LINKS):
-            mods_dir = Path(get_app_dir()) / "Mods"
-        else:
-            mods_dir = Path(cfg.get(cfg.Key.GAME_PATH)) / "Client/WindowsNoEditor/HT/Content/Paks/AuroraMods"
+        mods_dir = get_mods_path()
         self.mod_manager = ModManager(
             mods_dir=mods_dir,
             state_file=Path(get_app_dir()) / "Bin" / "disabled_mods.json"
