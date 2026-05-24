@@ -67,5 +67,7 @@
     "install_zone_title_folder": "フォルダからMODをインストール",
     "install_zone_choose_folder": "フォルダを選択",
     "mod_delete_title": "MODを削除",
-    "mod_delete_message": "以下のMODを本当に削除しますか？"
+    "mod_delete_message": "以下のMODを本当に削除しますか？",
+    "hard_links": "ハードリンクを使用",
+    "hard_links_desc": "MODの管理にハードリンク/ジャンクションを使用します。（非推奨）"
 }

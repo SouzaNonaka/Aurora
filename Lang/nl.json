@@ -67,5 +67,7 @@
     "install_zone_title_folder": "Mod installeren vanuit map",
     "install_zone_choose_folder": "Een map kiezen",
     "mod_delete_title": "Mod verwijderen",
-    "mod_delete_message": "Weet je zeker dat je de volgende mod wilt verwijderen?"
+    "mod_delete_message": "Weet je zeker dat je de volgende mod wilt verwijderen?",
+    "hard_links": "Hardlinks gebruiken",
+    "hard_links_desc": "Gebruik hardlinks/junctions voor het beheren van mods. (NIET AANBEVOLEN)"
 }

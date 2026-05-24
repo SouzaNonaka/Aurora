@@ -67,5 +67,7 @@
     "install_zone_title_folder": "Cài đặt bản mod từ thư mục",
     "install_zone_choose_folder": "Chọn một thư mục",
     "mod_delete_title": "Xóa bản mod",
-    "mod_delete_message": "Bạn có chắc chắn muốn xóa bản mod sau đây không?"
+    "mod_delete_message": "Bạn có chắc chắn muốn xóa bản mod sau đây không?",
+    "hard_links": "Sử dụng Hard Link",
+    "hard_links_desc": "Sử dụng hard link/junction để xử lý các bản mod. (KHÔNG KHUYẾN KHÍCH)"
 }

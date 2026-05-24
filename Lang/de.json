@@ -67,5 +67,7 @@
     "install_zone_title_folder": "Mod aus Ordner installieren",
     "install_zone_choose_folder": "Ordner auswählen",
     "mod_delete_title": "Mod löschen",
-    "mod_delete_message": "Bist du sicher, dass du den folgenden Mod löschen möchtest?"
+    "mod_delete_message": "Bist du sicher, dass du den folgenden Mod löschen möchtest?",
+    "hard_links": "Hardlinks verwenden",
+    "hard_links_desc": "Verwendet Hardlinks/Junctions zur Mod-Verwaltung. (NICHT EMPFOHLEN)"
 }

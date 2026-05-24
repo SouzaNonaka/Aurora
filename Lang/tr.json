@@ -66,5 +66,7 @@
     "install_zone_title_folder": "Klasörden Mod Yükle",
     "install_zone_choose_folder": "Bir klasör seç",
     "mod_delete_title": "Modu Sil",
-    "mod_delete_message": "Aşağıdaki modu silmek istediğinden emin misin?"
+    "mod_delete_message": "Aşağıdaki modu silmek istediğinden emin misin?",
+    "hard_links": "Sabit Bağlantıları (Hard Links) Kullan",
+    "hard_links_desc": "Modları yönetmek için sabit bağlantılar/kavşaklar kullanın. (ÖNERİLMEZ)"
 }

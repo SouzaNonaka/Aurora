@@ -67,5 +67,7 @@
     "install_zone_title_folder": "从文件夹安装模组",
     "install_zone_choose_folder": "选择文件夹",
     "mod_delete_title": "删除模组",
-    "mod_delete_message": "您确定要删除以下模组吗？"
+    "mod_delete_message": "您确定要删除以下模组吗？",
+    "hard_links": "使用硬链接",
+    "hard_links_desc": "使用硬链接/联接来处理模组。（不推荐）"
 }
