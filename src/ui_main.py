@@ -44,10 +44,10 @@ class GameMonitorThread(QThread):
                 self.access_denied.emit()
                 return
             if result:
-                launcher_path = self.engine.game_path / "NTEGlobalLauncher.exe"
+                launcher_path = self.engine.game_path / self.engine._vpaths.launcher_process
                 logger.info("Launcher started, waiting for manual game start. (HTGame.exe)", extra={"el": True})
                 subprocess.Popen([str(launcher_path)], cwd=str(self.engine.game_path))
-                self.engine.on_launcher_detected = lambda: self.launcher_detected.emit()  # <-- ADD
+                self.engine.on_launcher_detected = lambda: self.launcher_detected.emit()
                 self.engine.on_game_started = lambda: self.game_started.emit()
                 self.engine.monitor_game()
                 logger.info("Session was ended successfully.")
@@ -452,7 +452,6 @@ class AuroraUI(QMainWindow):
         hwnd_result = [None]
         
         def enum_cb(hwnd, _):
-            # Check 1. Basic Visibility check
             if not ctypes.windll.user32.IsWindowVisible(hwnd):
                 return True
                 
@@ -469,10 +468,7 @@ class AuroraUI(QMainWindow):
                 buf = ctypes.create_unicode_buffer(length + 1)
                 ctypes.windll.user32.GetWindowTextW(hwnd, buf, length + 1)
                 title = buf.value.lower()
-                
-                # Filter specifically for NTE
                 if any(name in title for name in ["neverness", "htgame", "nte"]):
-                    # Check 3. Final Sanity: Does it have an actual area?
                     rect = ctypes.wintypes.RECT()
                     ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(rect))
                     if (rect.right - rect.left) > 100:
@@ -495,15 +491,10 @@ class AuroraUI(QMainWindow):
 
         hwnd = self._get_game_hwnd()
         if hwnd:
-            # Check 1: Get the current active foreground window.
             foreground_hwnd = ctypes.windll.user32.GetForegroundWindow()
-            
-            # Check 2: Get window dimensions
             rect = ctypes.wintypes.RECT()
             ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(rect))
             width = rect.right - rect.left
-
-            # Check 3: Checks if NTE is focused and on the foreground before showing overlay (New Check) -Datura
             is_focused = (hwnd == foreground_hwnd)
             
             if is_focused and width > 100:
