@@ -12,7 +12,7 @@ from src.helpers.paths import _LAUNCHER_MAP, _ALL_NTE_PROCS, detect_version, get
 from src import config_manager as cfg
 from src.helpers.builtins import PAK_ADDONS
 from concurrent.futures import ThreadPoolExecutor, as_completed
-JUNK_EXTENSIONS = {'.rar', '.zip', '.7z', '.exe', '.tar', '.gz', '.asi', '.dll'}
+JUNK_EXTENSIONS = {'.rar', '.zip', '.7z', '.exe', '.tar', '.gz'}
 
 def get_app_dir():
     if getattr(sys, 'frozen', False):
@@ -178,13 +178,15 @@ class AuroraEngine:
             for file in aurora_mod_folder.iterdir():
                 dst = nte_mod_folder / file.name
                 if not dst.exists():
-                    shutil.move(file, nte_mod_folder)
-            self.junk_files_found = junk_files
-
-        for file in self.mods_source.iterdir():
-            if file.is_file() and file.suffix.lower() in JUNK_EXTENSIONS:
-                logger.warning(f"Skipping unsupported file in Mods folder: {file.name}")
-                junk_files.append(file.name)
+                    try:
+                        shutil.move(file, nte_mod_folder)
+                    except (PermissionError, OSError) as e:
+                        logger.warning(f"Could not migrate {file.name}: {e}")
+        if self.mods_source.exists():
+            for file in self.mods_source.iterdir():
+                if file.is_file() and file.suffix.lower() in JUNK_EXTENSIONS:
+                    logger.warning(f"Skipping unsupported file in Mods folder: {file.name}")
+                    junk_files.append(file.name)
 
         # Bin file validation.
         required_bin_files = [
@@ -217,7 +219,7 @@ class AuroraEngine:
                     (self.bin_path / "version.dll", self.targets["bin_dll"]),
                 ]
                 if "global_dll" in self.targets:
-                    self.targets["global_dll"].parent.mkdir(parents=True, exist_ok=True)
+                    _ensure_dir(self.targets["global_dll"].parent)
                     copies.append((self.bin_path / "version.dll", self.targets["global_dll"]))
                 with ThreadPoolExecutor() as ex:
                     futures = {ex.submit(shutil.copy, src, dst): dst for src, dst in copies}
@@ -282,9 +284,9 @@ class AuroraEngine:
                         else:
                             failed_mods.append(name)
                             logger.error(f"Failed to junction mod {name}: {err}")
-
-            logger.info(f"Successfully deployed {deployed_count} mods via junctions.")
-            if failed_mods:
+            if cfg.get(cfg.Key.USE_HARD_LINKS):
+                logger.info(f"Successfully deployed {deployed_count} mods via junctions.")
+            if failed_mods and cfg.get(cfg.Key.USE_HARD_LINKS):
                 logger.warning(f"Failed to deploy {len(failed_mods)} mod(s): {failed_mods}")
 
             for addon in PAK_ADDONS:

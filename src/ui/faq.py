@@ -36,7 +36,6 @@ def _resolve(field, lang: str) -> str | None:
 
 def _load_faq_items(lang: str = "en") -> list[dict]:
     questions_dir = Path(resource_path(os.path.join("Lang", "questions")))
-    logger.info(questions_dir)
     items = []
 
     if not questions_dir.exists():
