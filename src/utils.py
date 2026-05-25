@@ -34,3 +34,8 @@ def get_mods_path():
         return Path(get_app_dir()) / "Mods"
     else:
         return Path(cfg.get(cfg.Key.GAME_PATH)) / "Client/WindowsNoEditor/HT/Content/Paks/AuroraMods"
+    
+def _ensure_dir(path: Path):
+    if path.exists() and not path.is_dir():
+        path.unlink()  # remove the file so mkdir can proceed
+    path.mkdir(parents=True, exist_ok=True)

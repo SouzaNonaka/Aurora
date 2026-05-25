@@ -3,7 +3,7 @@ import sys
 import shutil
 import subprocess
 import zipfile
-from src.utils import get_mods_path, resource_path
+from src.utils import get_mods_path, resource_path, _ensure_dir
 from pathlib import Path
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout,
@@ -16,7 +16,6 @@ from src.styles import MOD_MANAGER_STYLE
 from src.translator import t
 from src.engine import get_app_dir
 from src.ui.elements import ModCard
-
 
 class _BaseInstallZone(QFrame):
     """Shared base for install drop zones."""
@@ -113,7 +112,7 @@ class _BaseInstallZone(QFrame):
         return dest
 
     def _install_paths(self, paths: list[Path]):
-        self.mods_dir.mkdir(parents=True, exist_ok=True)
+        _ensure_dir(self.mods_dir)
         installed = []
 
         for src in paths:
@@ -138,8 +137,6 @@ class _BaseInstallZone(QFrame):
 
 
 class ZipInstallZone(_BaseInstallZone):
-    """Drop zone for archive files (ZIP, RAR, 7Z)."""
-
     def __init__(self, mods_dir: Path, parent=None):
         super().__init__(
             mods_dir=mods_dir,
@@ -153,7 +150,7 @@ class ZipInstallZone(_BaseInstallZone):
         dialog = QFileDialog(self, "Select mod archive files")
         dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
         dialog.setNameFilters([
-            "Mod archives (*.zip *.7z *.rar)",
+            "Mod archives (*.zip)",
             "All files (*)",
         ])
 
@@ -164,8 +161,6 @@ class ZipInstallZone(_BaseInstallZone):
 
 
 class FolderInstallZone(_BaseInstallZone):
-    """Drop zone for mod folders."""
-
     def __init__(self, mods_dir: Path, parent=None):
         super().__init__(
             mods_dir=mods_dir,

@@ -19,6 +19,11 @@ def get_app_dir():
         return os.path.dirname(sys.executable)
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+def _ensure_dir(path: Path):
+    if path.exists() and not path.is_dir():
+        path.unlink()
+    path.mkdir(parents=True, exist_ok=True)
+
 class AuroraEngine:
     def __init__(self, game_path, censorship_removal=False, no_drive_line=False):
         self.game_path = Path(game_path)
@@ -168,8 +173,8 @@ class AuroraEngine:
                     shutil.move(file, aurora_mod_folder)
                 shutil.rmtree(nte_mod_folder)
         else:
-            nte_mod_folder.mkdir(exist_ok=True)
-            aurora_mod_folder.mkdir(exist_ok=True)
+            _ensure_dir(nte_mod_folder)
+            _ensure_dir(aurora_mod_folder)
             for file in aurora_mod_folder.iterdir():
                 dst = nte_mod_folder / file.name
                 if not dst.exists():
