@@ -12,7 +12,7 @@ from src.helpers.paths import _LAUNCHER_MAP, _ALL_NTE_PROCS, detect_version, get
 from src import config_manager as cfg
 from src.helpers.builtins import PAK_ADDONS
 from concurrent.futures import ThreadPoolExecutor, as_completed
-JUNK_EXTENSIONS = {'.rar', '.zip', '.7z', '.exe', '.tar', '.gz'}
+JUNK_EXTENSIONS = {'.rar', '.zip', '.7z', '.exe', '.tar', '.gz', '.asi', '.dll'}
 
 def get_app_dir():
     if getattr(sys, 'frozen', False):

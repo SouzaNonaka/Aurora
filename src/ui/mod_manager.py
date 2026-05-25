@@ -3,7 +3,7 @@ import sys
 import shutil
 import subprocess
 import zipfile
-from src.utils import get_mods_path, resource_path, _ensure_dir
+from src.utils import get_mods_path, resource_path
 from pathlib import Path
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout,
@@ -17,9 +17,14 @@ from src.translator import t
 from src.engine import get_app_dir
 from src.ui.elements import ModCard
 
-class _BaseInstallZone(QFrame):
-    """Shared base for install drop zones."""
 
+def _ensure_dir(path: Path):
+    if path.exists() and not path.is_dir():
+        path.unlink()
+    path.mkdir(parents=True, exist_ok=True)
+
+
+class _BaseInstallZone(QFrame):
     files_installed = pyqtSignal(list)
 
     STYLE = """
@@ -101,7 +106,7 @@ class _BaseInstallZone(QFrame):
     def _open_file_dialog(self):
         raise NotImplementedError
 
-    # ------------------------------------------------------------------ helpers
+    # Helpers
 
     def _unique_dest(self, dest: Path) -> Path:
         counter = 2
@@ -111,26 +116,73 @@ class _BaseInstallZone(QFrame):
             counter += 1
         return dest
 
+    def _extract_zip(self, src: Path, mods_dir: Path) -> Path:
+        with zipfile.ZipFile(src, "r") as zf:
+            entries = zf.namelist()
+            top_levels = {e.split('/')[0] for e in entries if e.strip('/')}
+            has_single_root = (
+                len(top_levels) == 1 and
+                any(e.startswith(next(iter(top_levels)) + '/') for e in entries)
+            )
+
+            if has_single_root:
+                root_name = next(iter(top_levels))
+                zip_dest = self._unique_dest(mods_dir / root_name)
+                zip_dest.mkdir(parents=True, exist_ok=True)
+                for member in zf.infolist():
+                    member_parts = Path(member.filename).parts[1:]
+                    if not member_parts:
+                        continue
+                    dest_path = zip_dest / Path(*member_parts)
+                    if member.is_dir():
+                        dest_path.mkdir(parents=True, exist_ok=True)
+                    else:
+                        dest_path.parent.mkdir(parents=True, exist_ok=True)
+                        with zf.open(member) as src_f, open(dest_path, 'wb') as dst_f:
+                            dst_f.write(src_f.read())
+            else:
+                zip_dest = self._unique_dest(mods_dir / src.stem)
+                zip_dest.mkdir(parents=True, exist_ok=True)
+                zf.extractall(zip_dest)
+
+        return zip_dest
+
     def _install_paths(self, paths: list[Path]):
         _ensure_dir(self.mods_dir)
         installed = []
 
         for src in paths:
             if src.is_dir():
-                dest = self._unique_dest(self.mods_dir / src.name)
-                shutil.copytree(src, dest)
-                installed.append(dest)
+                try:
+                    dest = self._unique_dest(self.mods_dir / src.name)
+                    shutil.copytree(src, dest)
+                    installed.append(dest)
+                except (PermissionError, OSError) as e:
+                    from src.logger import logger
+                    logger.warning(f"Could not copy folder {src.name}: {e}")
+                    continue
             elif src.is_file():
                 if src.suffix.lower() == ".zip":
-                    zip_dest = self._unique_dest(self.mods_dir / src.stem)
-                    zip_dest.mkdir(parents=True, exist_ok=True)
-                    with zipfile.ZipFile(src, "r") as zf:
-                        zf.extractall(zip_dest)
-                    installed.append(zip_dest)
+                    try:
+                        zip_dest = self._extract_zip(src, self.mods_dir)
+                        installed.append(zip_dest)
+                    except zipfile.BadZipFile:
+                        from src.logger import logger
+                        logger.warning(f"Could not extract {src.name}: not a valid ZIP file.")
+                        continue
+                    except (PermissionError, OSError) as e:
+                        from src.logger import logger
+                        logger.warning(f"Could not extract {src.name}: {e}")
+                        continue
                 else:
-                    dest = self._unique_dest(self.mods_dir / src.name)
-                    shutil.copy2(src, dest)
-                    installed.append(dest)
+                    try:
+                        dest = self._unique_dest(self.mods_dir / src.name)
+                        shutil.copy2(src, dest)
+                        installed.append(dest)
+                    except (PermissionError, OSError) as e:
+                        from src.logger import logger
+                        logger.warning(f"Could not copy {src.name}: {e}")
+                        continue
 
         if installed:
             self.files_installed.emit(installed)
@@ -141,8 +193,8 @@ class ZipInstallZone(_BaseInstallZone):
         super().__init__(
             mods_dir=mods_dir,
             icon_path="Bin/Assets/install_zip.png",
-            title=t("install_zone_title_zip") or "Install mod archives",
-            choose_label=t("install_zone_choose_zip") or "choose ZIP / RAR / 7Z files",
+            title=t("install_zone_title_zip") or "Install Mod from ZIP",
+            choose_label=t("install_zone_choose_zip") or "Choose ZIP files",
             parent=parent,
         )
 
@@ -165,8 +217,8 @@ class FolderInstallZone(_BaseInstallZone):
         super().__init__(
             mods_dir=mods_dir,
             icon_path="Bin/Assets/install_folder.png",
-            title=t("install_zone_title_folder") or "Install mod folder",
-            choose_label=t("install_zone_choose_folder") or "choose a folder",
+            title=t("install_zone_title_folder") or "Install Mod from folder",
+            choose_label=t("install_zone_choose_folder") or "Choose a folder",
             parent=parent,
         )
 
@@ -320,9 +372,7 @@ class ModManagerOverlay(QFrame):
 
     def _open_mods_folder(self):
         mods_path = get_mods_path()
-        print(mods_path)
-        if not mods_path.exists():
-            mods_path.mkdir(parents=True, exist_ok=True)
+        _ensure_dir(mods_path)
         if sys.platform == "win32":
             os.startfile(str(mods_path))
         elif sys.platform == "darwin":
@@ -339,11 +389,14 @@ class ModManagerOverlay(QFrame):
         self._lbl_mod_count.setText(f"{enabled} {TMP_desc_a} {total} {TMP_desc_b}")
 
     def refresh_list(self):
-        for i in reversed(range(self.list_layout.count())):
+        widgets_to_remove = []
+        for i in range(self.list_layout.count()):
             item = self.list_layout.itemAt(i)
-            child = item.widget()
+            child = item.widget() if item else None
             if child:
-                child.deleteLater()
+                widgets_to_remove.append(child)
+        for w in widgets_to_remove:
+            w.deleteLater()
 
         search_text = self.search_bar.text().lower()
         mods = self.manager.scan_mods()
@@ -353,14 +406,14 @@ class ModManagerOverlay(QFrame):
         ]
 
         self._update_mod_count()
+
         if not visible:
-            if self.list_layout.count() == 0:
-                empty = QLabel("No mods found" if search_text else "No mods installed")
-                empty.setObjectName("EmptyLabel")
-                empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                self.list_layout.addStretch()
-                self.list_layout.addWidget(empty)
-                self.list_layout.addStretch()
+            empty = QLabel("No mods found" if search_text else "No mods installed")
+            empty.setObjectName("EmptyLabel")
+            empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.list_layout.addStretch()
+            self.list_layout.addWidget(empty)
+            self.list_layout.addStretch()
             return
 
         for mod in visible:
