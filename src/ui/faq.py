@@ -3,9 +3,9 @@ from PyQt6.QtWidgets import (
     QScrollArea, QWidget, QPushButton
 )
 from PyQt6.QtCore import Qt, QPropertyAnimation, QEasingCurve, QSize
+import os
 from PyQt6.QtGui import QIcon
 from src.utils import resource_path
-from src.engine import get_app_dir
 from src.logger import logger
 from src import config_manager as cfg
 from src.translator import Translator
@@ -35,7 +35,8 @@ def _resolve(field, lang: str) -> str | None:
 
 
 def _load_faq_items(lang: str = "en") -> list[dict]:
-    questions_dir = Path(get_app_dir()) / "src" / "ui" / "questions"
+    questions_dir = Path(resource_path(os.path.join("Lang", "questions")))
+    logger.info(questions_dir)
     items = []
 
     if not questions_dir.exists():
