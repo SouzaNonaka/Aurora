@@ -12,6 +12,7 @@ from src.helpers.paths import _LAUNCHER_MAP, _ALL_NTE_PROCS, detect_version, get
 from src import config_manager as cfg
 from src.helpers.builtins import PAK_ADDONS
 from concurrent.futures import ThreadPoolExecutor, as_completed
+JUNK_EXTENSIONS = {'.rar', '.zip', '.7z', '.exe', '.tar', '.gz'}
 
 def get_app_dir():
     if getattr(sys, 'frozen', False):
@@ -50,10 +51,17 @@ class AuroraEngine:
         if self._vpaths.global_dll is not None:
             self.targets["global_dll"] = self._vpaths.global_dll
 
-        self.cr_targets = {
-            "ntfrmain_asi": self._win64 / "ntfrmain.asi",
-            "cutils_dll":   self._win64 / "cutils.dll",
-        }
+        if self.version == "cn":
+            self.cr_targets = {
+                "ntfrmain_asi": self._win64 / "cn_ntfrmain.asi",
+                "cutils_dll":   self._win64 / "cutils.dll",
+                "ntfrsub_dll":  self._win64 / "cn_ntfrsub.dll",
+            }
+        else:
+            self.cr_targets = {
+                "ntfrmain_asi": self._win64 / "ntfrmain.asi",
+                "cutils_dll":   self._win64 / "cutils.dll",
+            }
 
         self._builtins_source = self.bin_path / "Builtins"
         self.ndl_targets = {
@@ -153,6 +161,7 @@ class AuroraEngine:
    
         nte_mod_folder = self.game_path / "Client/WindowsNoEditor/HT/Content/Paks/AuroraMods"
         aurora_mod_folder = Path(get_app_dir() + "/Mods")
+        junk_files = []
         if cfg.get(cfg.Key.USE_HARD_LINKS):
             if Path.exists(nte_mod_folder):
                 for file in nte_mod_folder.iterdir():
@@ -162,7 +171,15 @@ class AuroraEngine:
             nte_mod_folder.mkdir(exist_ok=True)
             aurora_mod_folder.mkdir(exist_ok=True)
             for file in aurora_mod_folder.iterdir():
-                shutil.move(file, nte_mod_folder)
+                dst = nte_mod_folder / file.name
+                if not dst.exists():
+                    shutil.move(file, nte_mod_folder)
+            self.junk_files_found = junk_files
+
+        for file in self.mods_source.iterdir():
+            if file.is_file() and file.suffix.lower() in JUNK_EXTENSIONS:
+                logger.warning(f"Skipping unsupported file in Mods folder: {file.name}")
+                junk_files.append(file.name)
 
         # Bin file validation.
         required_bin_files = [
@@ -170,10 +187,17 @@ class AuroraEngine:
             self.bin_path / "signmain.asi",
         ]
         if self.censorship_removal:
-            required_bin_files += [
-                self.bin_path / "ntfrmain.asi",
-                self.bin_path / "cutils.dll",
-            ]
+            if self.version == "cn":
+                required_bin_files += [
+                    self.bin_path / "cn_ntfrmain.asi",
+                    self.bin_path / "cutils.dll",
+                    self.bin_path / "cn_ntfrsub.dll",
+                ]
+            else:
+                required_bin_files += [
+                    self.bin_path / "ntfrmain.asi",
+                    self.bin_path / "cutils.dll",
+                ]
         for f in required_bin_files:
             if not f.exists():
                 logger.critical(f"Missing required Bin file, the following file is required for Aurora to function properly: {f}")
@@ -219,8 +243,9 @@ class AuroraEngine:
             if self.censorship_removal:
                 logger.info("Censorship Removal is enabled, copying censorship patching files.")
                 try:
-                    shutil.copy(self.bin_path / "ntfrmain.asi", self.cr_targets["ntfrmain_asi"])
-                    shutil.copy(self.bin_path / "cutils.dll",   self.cr_targets["cutils_dll"])
+                    for key, dst in self.cr_targets.items():
+                        src_name = dst.name
+                        shutil.copy(self.bin_path / src_name, dst)
                     logger.info("Copied censorship-removal files.")
                 except (PermissionError, OSError) as e:
                     if getattr(e, 'winerror', None) in (5, 32):
@@ -275,6 +300,7 @@ class AuroraEngine:
                         return "access_denied"
                     raise
 
+            self.junk_files_found = junk_files
             return True
 
         except Exception as e:

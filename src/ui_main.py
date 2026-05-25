@@ -34,7 +34,8 @@ from src.ui.faq import FaqOverlay
 class GameMonitorThread(QThread):
     game_started = pyqtSignal()  # emitted the moment HTGame.exe is detected
     access_denied = pyqtSignal() # emitted when AV/UAC blocks a file operation (or if the user somehow ran it without Administrator priviledges)
-    launcher_detected = pyqtSignal() 
+    launcher_detected = pyqtSignal()
+    junk_files_found = pyqtSignal(list)
 
     def __init__(self, engine):
         super().__init__()
@@ -48,6 +49,9 @@ class GameMonitorThread(QThread):
                 return
             if result:
                 launcher_path = self.engine.game_path / self.engine._vpaths.launcher_process
+                junk = getattr(self.engine, 'junk_files_found', [])
+                if junk:
+                    self.junk_files_found.emit(junk)
                 logger.info("Launcher started, waiting for manual game start. (HTGame.exe)", extra={"el": True})
                 subprocess.Popen([str(launcher_path)], cwd=str(self.engine.game_path))
                 self.engine.on_launcher_detected = lambda: self.launcher_detected.emit()
@@ -401,6 +405,8 @@ class AuroraUI(QMainWindow):
             logger.warning("Aurora did not find NTE using Drive Search.")
             ToastNotification(self.central_widget, t("toast_game_not_found"), True)
 
+
+
     # LAUNCH
     def handle_launch(self):
         logger.info("Launch button was clicked, initialising engine...", extra={"el": True})
@@ -416,6 +422,7 @@ class AuroraUI(QMainWindow):
         self.monitor_thread.finished.connect(lambda: setattr(self, 'monitor_thread', None))
         self.monitor_thread.finished.connect(self._on_session_ended)
         self.monitor_thread.game_started.connect(self._show_game_overlay)
+        self.monitor_thread.junk_files_found.connect(self._show_junk_files_popup)
         self.monitor_thread.launcher_detected.connect(self._send_to_tray)
         self.monitor_thread.access_denied.connect(self._show_access_denied_popup)
         self.monitor_thread.start()
@@ -437,6 +444,22 @@ class AuroraUI(QMainWindow):
                 "This is commonly caused by Antivirus software inteference. "
                 "Try adding the Aurora folder to your antivirus "
                 "whitelist (exclusion list) and re-launching.\n"
+            ),
+            confirm_text="OK",
+            cancel_text="",
+            on_confirm=None,
+        )
+
+    def _show_junk_files_popup(self, filenames):
+        file_list = "\n".join(f"  • {f}" for f in filenames)
+        PopupDialog(
+            parent=self.central_widget,
+            title="Unsupported Files Detected",
+            message=(
+                "The following files in your Mods folder are not valid PAK mods "
+                "and were skipped:\n\n"
+                f"{file_list}\n\n"
+                "Make sure mods are properly extracted before installing."
             ),
             confirm_text="OK",
             cancel_text="",

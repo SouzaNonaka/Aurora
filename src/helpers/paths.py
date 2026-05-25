@@ -15,9 +15,10 @@ _LAUNCHER_MAP = {
 }
 # TW helper processes are marked TODO until confirmed.
 _ALL_NTE_PROCS = {
-    "ntegloballauncher.exe", "nteglobal.exe", "nteglobalgame.exe",
-    "ntelauncher.exe", "ntegame.exe",
-    "ntetwlauncher.exe",
+    "ntegloballauncher.exe", "nteglobal.exe", "nteglobalgame.exe", # GL
+    "ntelauncher.exe", "ntegame.exe", # CN
+    "ntetwlauncher.exe", "ntetwgame.exe", # TW
+    "htgame.exe" # GL
 }
 
 # VERSION PATHS
@@ -43,7 +44,7 @@ def get_version_paths(game_path: Path, version: str) -> VersionPaths:
 
     if version == VERSION_GLOBAL:
         win64    = game_path / "Client/WindowsNoEditor/HT/Binaries/Win64"
-        pak_base = game_path / "Client/WindowsNoEditor/HT/Content/Paks/~Aurora"
+        pak_base = game_path / "Client/WindowsNoEditor/HT/Content/Paks/AuroraMods"
         return VersionPaths(
             version          = VERSION_GLOBAL,
             win64            = win64,
@@ -58,7 +59,7 @@ def get_version_paths(game_path: Path, version: str) -> VersionPaths:
 
     if version == VERSION_CN:
         win64    = game_path / "Client/WindowsNoEditor/HT/Binaries/Win64"
-        pak_base = game_path / "Client/WindowsNoEditor/HT/Content/Paks/~Aurora"
+        pak_base = game_path / "Client/WindowsNoEditor/HT/Content/Paks/AuroraMods"
         return VersionPaths(
             version          = VERSION_CN,
             win64            = win64,
@@ -72,14 +73,18 @@ def get_version_paths(game_path: Path, version: str) -> VersionPaths:
         )
 
     if version == VERSION_TW:
-        # TODO: Fill in confirmed TW paths before shipping TW support.
-        # Known so far:
-        # - launcher_process = "NTETWLauncher.exe"
-        # - win64 / pak_base / global_dll / helper_processes = UNCONFIRMED
-        # Waiting for the Taiwan contributor to give us the paths - Datura
-        raise NotImplementedError(
-            "TW version paths have not been confirmed yet. "
-            "Update get_version_paths() in src/engine_helpers/paths.py once confirmed."
+        win64    = game_path / "Client/WindowsNoEditor/HT/Binaries/Win64"
+        pak_base = game_path / "Client/WindowsNoEditor/HT/Content/Paks/AuroraMods"
+        return VersionPaths(
+            version          = VERSION_TW,
+            win64            = win64,
+            pak_base         = pak_base,
+            root_dll         = game_path / "version.dll",
+            bin_dll          = win64 / "version.dll",
+            global_dll       = game_path / "NTETW" / "version.dll",
+            asi_plugin       = win64 / "signmain.asi",
+            launcher_process = "NTETWLauncher.exe",
+            helper_processes = ["NTETWGame.exe"],  # equivalent of NTEGlobalGame.exe, lives in NTELauncher/
         )
 
     raise ValueError(f"Unknown NTE version: '{version!r}'")
