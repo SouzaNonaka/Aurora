@@ -27,14 +27,41 @@ class VersionPaths:
     version: str
     win64:    Path   # .../Binaries/Win64
     pak_base: Path
+
+    # Primary loader DLL targets (always present)
     root_dll:   Path
     bin_dll:    Path
     global_dll: Optional[Path]
+
+    # Secondary loader DLL targets (CN only, None for global/tw)
+    root_dll2:   Optional[Path]
+    bin_dll2:    Optional[Path]
+    global_dll2: Optional[Path]
+
     asi_plugin: Path
 
     launcher_process:  str
     helper_processes:  list[str]
     game_process:      str = "HTGame.exe"
+
+    @property
+    def all_dll_targets(self) -> list[tuple[str, Path]]:
+        """
+        Returns all (key, path) loader DLL pairs that are active for this version.
+        Skips any that are None (i.e. secondary slots unused on global/tw).
+        """
+        pairs = [
+            ("root_dll",   self.root_dll),
+            ("bin_dll",    self.bin_dll),
+            ("root_dll2",  self.root_dll2),
+            ("bin_dll2",   self.bin_dll2),
+        ]
+        if self.global_dll is not None:
+            pairs.append(("global_dll", self.global_dll))
+        if self.global_dll2 is not None:
+            pairs.append(("global_dll2", self.global_dll2))
+        return [(k, p) for k, p in pairs if p is not None]
+
 
 # Get Version Paths
 
@@ -50,6 +77,9 @@ def get_version_paths(game_path: Path, version: str) -> VersionPaths:
             root_dll         = game_path / "version.dll",
             bin_dll          = win64 / "version.dll",
             global_dll       = game_path / "NTEGlobal" / "version.dll",
+            root_dll2        = None,
+            bin_dll2         = None,
+            global_dll2      = None,
             asi_plugin       = win64 / "ausigbp.asi",
             launcher_process = "NTEGlobalLauncher.exe",
             helper_processes = ["NTEGlobal.exe", "NTEGlobalGame.exe"],
@@ -65,9 +95,12 @@ def get_version_paths(game_path: Path, version: str) -> VersionPaths:
             root_dll         = game_path / "dinput8.dll",
             bin_dll          = win64 / "dinput8.dll",
             global_dll       = game_path / "NTELauncher" / "dinput8.dll",
+            root_dll2        = game_path / "dsound.dll",
+            bin_dll2         = win64 / "dsound.dll",
+            global_dll2      = game_path / "NTELauncher" / "dsound.dll",
             asi_plugin       = win64 / "ausigbp.asi",
             launcher_process = "NTELauncher.exe",
-            helper_processes = ["NTEGame.exe"],  # equivalent of NTEGlobalGame.exe, lives in NTELauncher/
+            helper_processes = ["NTEGame.exe"],
         )
 
     if version == VERSION_TW:
@@ -80,13 +113,15 @@ def get_version_paths(game_path: Path, version: str) -> VersionPaths:
             root_dll         = game_path / "version.dll",
             bin_dll          = win64 / "version.dll",
             global_dll       = game_path / "NTETW" / "version.dll",
+            root_dll2        = None,
+            bin_dll2         = None,
+            global_dll2      = None,
             asi_plugin       = win64 / "ausigbp.asi",
             launcher_process = "NTETWLauncher.exe",
-            helper_processes = ["NTETWGame.exe"],  # equivalent of NTEGlobalGame.exe, lives in NTELauncher/
+            helper_processes = ["NTETWGame.exe"],
         )
 
     raise ValueError(f"Unknown NTE version: '{version!r}'")
-
 
 # Public API
 

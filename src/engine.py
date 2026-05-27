@@ -47,22 +47,22 @@ class AuroraEngine:
         self.version = detect_version(self.game_path)
         self._vpaths = get_version_paths(self.game_path, self.version)
         logger.info(f"Detected NTE version: {self.version.upper()}")
-        self.main_dll = "dinput8.dll" if self.version == "cn" else "version.dll"
+
+        # CN needs two loader DLLs; global and TW only need one.
+        self.main_dlls = ["dinput8.dll", "dsound.dll"] if self.version == "cn" else ["version.dll"]
 
         self._win64    = self._vpaths.win64
         self._pak_base = self._vpaths.pak_base
 
+        # DLL targets are now driven by VersionPaths.all_dll_targets so we
+        # don't hardcode root/bin/global slots here anymore.
         self.targets = {
-            "root_dll":   self._vpaths.root_dll,
-            "bin_dll":    self._vpaths.bin_dll,
             "asi_plugin": self._vpaths.asi_plugin,
         }
-        if self._vpaths.global_dll is not None:
-            self.targets["global_dll"] = self._vpaths.global_dll
 
         if self.version == "cn":
             self.cr_targets = {
-                "ntfrmain_asi": self._win64 / "cnntfr.asi",
+                "ntfrmain_asi": self._win64 / "cnntfrmain.asi",
                 "cutils_dll":   self._win64 / "cutils.dll",
                 "ntfrsub_dll":  self._win64 / "cnntfrsub.dll",
             }
@@ -113,15 +113,16 @@ class AuroraEngine:
             except subprocess.TimeoutExpired:
                 p.kill()
 
-        dll_path = self.targets.get("global_dll")
-        if dll_path and dll_path.exists():
-            for _ in range(5):
-                try:
-                    with open(dll_path, 'r+b'):
-                        break
-                except (PermissionError, OSError):
-                    logger.warning("global_dll still locked, Aurora is waiting...", extra={'el': True})
-                    time.sleep(1)
+        # Wait for all loader DLL targets to be released before continuing.
+        for key, dll_path in self._vpaths.all_dll_targets:
+            if dll_path and dll_path.exists():
+                for _ in range(5):
+                    try:
+                        with open(dll_path, 'r+b'):
+                            break
+                    except (PermissionError, OSError):
+                        logger.warning(f"{key} still locked, Aurora is waiting...", extra={'el': True})
+                        time.sleep(1)
 
     def sanitize(self, kill_first: bool):
         pak_dir = self._pak_base.parent
@@ -129,7 +130,9 @@ class AuroraEngine:
         if kill_first:
             self._kill_nte()
 
-        all_targets = {**self.targets, **self.cr_targets, **self.ndl_targets}
+        # Build the full target map from VersionPaths so all DLL slots are covered.
+        dll_targets = {key: path for key, path in self._vpaths.all_dll_targets}
+        all_targets = {**dll_targets, **self.targets, **self.cr_targets, **self.ndl_targets}
 
         for key, path in all_targets.items():
             if not os.path.lexists(path):
@@ -192,9 +195,9 @@ class AuroraEngine:
                     logger.warning(f"Skipping unsupported file in Mods folder: {file.name}")
                     junk_files.append(file.name)
 
-        # Bin file validation.
+        # Bin file validation — check every loader DLL for this version.
         required_bin_files = [
-            self.bin_path / self.main_dll,
+            *[self.bin_path / dll for dll in self.main_dlls],
             self.bin_path / "ausigbp.asi",
         ]
         if self.censorship_removal:
@@ -216,15 +219,15 @@ class AuroraEngine:
 
         try:
             self.sanitize(kill_first=True)
-            logger.info(f"Copying {self.main_dll} to game directories...", extra={'el': True})
+            logger.info(f"Copying loader DLL(s) {self.main_dlls} to game directories...", extra={'el': True})
             try:
-                copies = [
-                    (self.bin_path / self.main_dll, self.targets["root_dll"]),
-                    (self.bin_path / self.main_dll, self.targets["bin_dll"]),
-                ]
-                if "global_dll" in self.targets:
-                    _ensure_dir(self.targets["global_dll"].parent)
-                    copies.append((self.bin_path / self.main_dll, self.targets["global_dll"]))
+                # Build copy pairs for every loader DLL across all target slots.
+                copies = []
+                for key, dst_path in self._vpaths.all_dll_targets:
+                    src = self.bin_path / dst_path.name
+                    _ensure_dir(dst_path.parent)
+                    copies.append((src, dst_path))
+
                 with ThreadPoolExecutor() as ex:
                     futures = {ex.submit(shutil.copy, src, dst): dst for src, dst in copies}
                     for future in as_completed(futures):
@@ -233,7 +236,7 @@ class AuroraEngine:
             except (PermissionError, OSError) as e:
                 if getattr(e, 'winerror', None) in (5, 32):
                     # WinError 5 = Access Denied, WinError 32 = file in use.
-                    logger.error(f"Access denied copying {self.main_dll} (WinError {e.winerror}). Likely blocked by antivirus or UAC.")
+                    logger.error(f"Access denied copying loader DLL(s) (WinError {e.winerror}). Likely blocked by antivirus or UAC.")
                     self.sanitize(kill_first=False)
                     return "access_denied"
                 raise
