@@ -82,7 +82,7 @@ Aurora's Mod Manager supports a `mod.json` file inside your mod folder to displa
 | Language | Status | File | Status |
 | :--- | :--- | :---: | :---: |
 | <img src="https://flagcdn.com/w20/gb.png" width="20"> English | ![100%](https://geps.dev/progress/100?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `en.json` |
-| <img src="https://flagcdn.com/w20/ru.png" width="20"> Russian | ![100%](https://geps.dev/progress/100?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `ru.json` | Credits: [@raperov] |
+| <img src="https://flagcdn.com/w20/ru.png" width="20"> Russian | ![100%](https://geps.dev/progress/100?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `ru.json` | Credits: [@raperov](https://github.com/raperov) |
 | <img src="https://flagcdn.com/w20/es.png" width="20"> Spanish | ![100%](https://geps.dev/progress/100?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `es.json` | Credits: [@Alawapr](https://github.com/Alawapr)
 | <img src="https://flagcdn.com/w20/fr.png" width="20"> French | ![0%](https://geps.dev/progress/0?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `fr.json` | No Translation |
 | <img src="https://flagcdn.com/w20/de.png" width="20"> German | ![1000%](https://geps.dev/progress/100?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `de.json` |
@@ -92,7 +92,7 @@ Aurora's Mod Manager supports a `mod.json` file inside your mod folder to displa
 | <img src="https://flagcdn.com/w20/kr.png" width="20"> Korean | ![0%](https://geps.dev/progress/0?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `kr.json` | No Translation |
 | <img src="https://flagcdn.com/w20/vn.png" width="20"> Vietnamese | ![100%](https://geps.dev/progress/100?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `vi.json` | Credits: [@TanNhatCMS](https://github.com/TanNhatCMS) |
 | <img src="https://flagcdn.com/w20/nl.png" width="20"> Dutch | ![100%](https://geps.dev/progress/100?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `nl.json` | Credits: [@devAxri](https://github.com/devAxri)
-| <img src="https://flagcdn.com/w20/it.png" width="20"> Italian | ![0%](https://geps.dev/progress/0?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `nl.json` | No Translation |
+| <img src="https://flagcdn.com/w20/it.png" width="20"> Italian | ![100%](https://geps.dev/progress/100?dangerColor=e05d44&warningColor=dfb317&successColor=2ea44f) | `it.json` | Credits: [@yuukitoyaro](https://github.com/yuukitoyaro) |
 
 ### ᅠ
 ## Contributors
