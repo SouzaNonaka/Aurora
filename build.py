@@ -41,6 +41,7 @@ def run_build():
         f"--add-data=Bin/Assets{SEP}Bin/Assets",
         f"--add-data=Bin/version.dll{SEP}Bin",
         f"--add-data=Bin/dinput8.dll{SEP}Bin",
+        f"--add-data=Bin/dsound.dll{SEP}Bin",
         f"--add-data=Bin/ausigbp.asi{SEP}Bin",
         f"--add-data=Bin/glntfrmain.asi{SEP}Bin",
         f"--add-data=Bin/cnntfrmain.asi{SEP}Bin",
